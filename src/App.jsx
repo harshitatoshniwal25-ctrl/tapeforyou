@@ -652,43 +652,46 @@ const StepRecord = ({ tapeData, updateTapeData, onNext }) => {
   };
 
   const startRecording = async () => {
-    // Mobile safety check: Ensure browser supports recording
+    // Mobile safety check
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert(
-        "Your browser or app (like Instagram/TikTok) is blocking the microphone. Please open this link directly in Safari or Chrome to record!"
-      );
+      alert("Microphone access is blocked. Please open this directly in your browser!");
       return;
     }
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      
+      // 1. Smart Audio Detection: Apple vs Everyone Else
+      let audioFormat = "audio/webm"; // Default for Android/Chrome/Mac
+      if (typeof MediaRecorder.isTypeSupported === "function" && MediaRecorder.isTypeSupported("audio/mp4")) {
+        audioFormat = "audio/mp4"; // Force Apple format for iPhones!
+      }
+
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: audioFormat });
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
+      
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) audioChunksRef.current.push(event.data);
       };
+      
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, {
-          type: "audio/webm",
-        });
+        // 2. Lock in the exact format so the phone knows how to play it
+        const audioBlob = new Blob(audioChunksRef.current, { type: audioFormat });
         const audioUrl = URL.createObjectURL(audioBlob);
         updateTapeData("audioBlob", audioBlob);
         updateTapeData("audioUrl", audioUrl);
         audioRef.current.src = audioUrl;
         stream.getTracks().forEach((track) => track.stop());
       };
+      
       mediaRecorder.start();
       setIsRecording(true);
       setRecordingTime(0);
 
       timerRef.current = setInterval(() => {
         setRecordingTime((prev) => {
-          if (
-            prev >= 59 &&
-            mediaRecorderRef.current &&
-            mediaRecorderRef.current.state === "recording"
-          ) {
+          if (prev >= 59 && mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
             mediaRecorderRef.current.stop();
             setIsRecording(false);
             clearInterval(timerRef.current);
@@ -698,9 +701,7 @@ const StepRecord = ({ tapeData, updateTapeData, onNext }) => {
         });
       }, 1000);
     } catch (err) {
-      alert(
-        "Microphone access is needed to record. Please check your phone settings."
-      );
+      alert("Microphone access is needed to record. Please check your phone settings.");
     }
   };
 

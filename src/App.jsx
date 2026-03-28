@@ -10,12 +10,12 @@ import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 
 // --- Firebase Cloud Storage Setup ---
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  apiKey: "AIzaSyDHavtG7eqT9Dbn03myy69_ak9gfAxQSfM",
+  authDomain: "tape-for-you.firebaseapp.com",
+  projectId: "tape-for-you",
+  storageBucket: "tape-for-you.firebasestorage.app",
+  messagingSenderId: "950769912599",
+  appId: "1:950769912599:web:2a004e9a9f6f1795d10552"
 };
 
 let app, auth, db;
@@ -26,7 +26,7 @@ try {
   auth = getAuth(app);
   db = getFirestore(app);
 } catch (error) {
-  console.error("Firebase failed to initialize:", error);
+  console.error("Firebase failed:", error);
 }
 
 // --- Cute Handdrawn-Style Icons ---
